@@ -19,3 +19,7 @@ Rich.Cms = {};
     document.write('<script src="' + src + '" type="text/javascript"></script>');
   }
 }());
+
+$.ajaxFormHandlers.rich_cms_login = function(form, response) {
+  window.location.reload();
+}

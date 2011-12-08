@@ -1,5 +1,5 @@
 <div class="login">
-  <%= form_for rich_cms_admin_class.new, :url => rich_cms_login_path, :html => {:class => "ajaxify"} do |form| %>
+  <%= form_for rich_cms_admin_class.new, :url => rich_cms_login_path, :html => {:class => "ajaxify", :name => "rich_cms_login"} do |form| %>
     <fieldset class="inputs">
       <ol>
         <% rich_cms_admin_inputs.each do |input| %>
