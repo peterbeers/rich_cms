@@ -4,11 +4,14 @@ if Rails::VERSION::MAJOR >= 3
     scope :module => "rich" do
       match "/cms/"     => "cms#display" , :as => "rich_cms"     , :display => true
       match "/cms/hide" => "cms#display" , :as => "rich_cms_hide", :display => false
-      %w(login logout).each do |action|
-        match "/cms/#{action}" => "cms_sessions##{action}", :as => "rich_cms_#{action}"
-      end
       %w(position update).each do |action|
         match "/cms/#{action}" => "cms##{action}", :as => "rich_cms_#{action}"
+      end
+    end
+    devise_scope :user do
+      scope :module => "devise" do
+        match "/cms/login" => "sessions#create", :as => "rich_cms_login"
+        match "/cms/logout" => "sessions#destroy", :as => "rich_cms_logout"
       end
     end
   end
