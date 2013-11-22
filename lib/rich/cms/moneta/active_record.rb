@@ -49,28 +49,32 @@ module Moneta
   private
 
     def new_store(options)
-      Class.new(::ActiveRecord::Base).tap do |store|
-        store.establish_connection options[:connection] || raise("You must specify :connection")
-        store.set_table_name       options[:table_name] || raise("You must specify :table_name")
-        store.class_eval <<-CODE
+      Class.new(::ActiveRecord::Base) do
+        def self.name
+          "cms_contents"
+        end
+
+        class_eval <<-CODE
           def self.find(key)
-            find_by_#{options[:key]} key
+            find_by_#{options[:key]}(key)
           end
 
           def self.find_or_initialize(key)
-            find_or_initialize_by_#{options[:key]} key
+            find_or_initialize_by(#{options[:key]}: key)
           end
 
           def value=(val)
-            write_attribute :#{options[:value]}, val
+            write_attribute(:#{options[:value]}, val)
           end
 
           def value
-            read_attribute :#{options[:value]}
+            read_attribute(:#{options[:value]})
           end
         CODE
+
+        table_name = options[:table_name] || raise("You must specify :table_name")
+        establish_connection options[:connection] || raise("You must specify :connection")
       end
     end
-
   end
 end

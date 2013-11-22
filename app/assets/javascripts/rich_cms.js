@@ -50,7 +50,7 @@ $.extend({
   }
 });
 
-$("form.ajaxify").live("submit", function(event) {
+$(document).on("submit", "form.ajaxify", function(event) {
   var form = $(this);
 
   $.ajax({
@@ -79,13 +79,11 @@ $.extend({
     return array;
   },
   initModules: function(namespace) {
-    $(function() {
-      $.each($.modules(namespace), function(i, module) {
-        if (module.init) {
-          module.init();
-        }
-        $.initModules(module);
-      });
+    $.each($.modules(namespace), function(i, module) {
+      if (module.init) {
+        module.init();
+      }
+      $.initModules(module);
     });
   }
 });
@@ -109,52 +107,47 @@ $.extend({
   }
 });
 
-$(function() {
-  if ($.fn.jquery >= "1.5") {
-    var TYPE    = "RICH_CMS",
-        reg_exp = /\[([^\]]*)=([^\]]*[\:\;][^\]]*)\]/,
-        fescape = function(all, num) {
-          return "\\" + (num - 0 + 1);
-        },
-        find = function(match, context) {
-          var elements = context.getElementsByTagName("*"), ret = [];
-          for (var i = 0; i < elements.length; i++) {
-            var element = elements[i];
-            if (element.getAttribute(match[1]) == match[2]) {
-              ret.push(element);
-            }
-          }
-          return ret.length === 0 ? null : ret;
-        };
+// $(function() {
+//   if ($.fn.jquery >= "1.5") {
+//     var TYPE    = "RICH_CMS",
+//         reg_exp = /\[([^\]]*)=([^\]]*[\:\;][^\]]*)\]/,
+//         fescape = function(all, num) {
+//           return "\\" + (num - 0 + 1);
+//         },
+//         find = function(match, context) {
+//           var elements = context.getElementsByTagName("*"), ret = [];
+//           for (var i = 0; i < elements.length; i++) {
+//             var element = elements[i];
+//             if (element.getAttribute(match[1]) == match[2]) {
+//               ret.push(element);
+//             }
+//           }
+//           return ret.length === 0 ? null : ret;
+//         };
 
-    $.expr.order.unshift(TYPE);
-    $.expr.match    [TYPE] = new RegExp(reg_exp.source + (/(?![^\[]*\])(?![^\(]*\))/.source));
-    $.expr.leftMatch[TYPE] = new RegExp(/(^(?:.|\r|\n)*?)/ .source + $.expr.match[TYPE].source.replace(/\\(\d+)/g, fescape));
-    $.expr.find     [TYPE] = find;
-  }
-});
+//     $.expr.order.unshift(TYPE);
+//     $.expr.match    [TYPE] = new RegExp(reg_exp.source + (/(?![^\[]*\])(?![^\(]*\))/.source));
+//     $.expr.leftMatch[TYPE] = new RegExp(/(^(?:.|\r|\n)*?)/ .source + $.expr.match[TYPE].source.replace(/\\(\d+)/g, fescape));
+//     $.expr.find     [TYPE] = find;
+//   }
+// });
 
-$.extend({
-  ie:  jQuery.browser.msie,
-  ie6: jQuery.browser.msie    && parseInt(jQuery.browser.version, 10) == 6,
-  ie7: jQuery.browser.msie    && parseInt(jQuery.browser.version, 10) == 7,
-  ie8: jQuery.browser.msie    && parseInt(jQuery.browser.version, 10) == 8,
-  ff2: jQuery.browser.mozilla && parseFloat(jQuery.browser.version) < 1.9
-});
+// $.extend({
+//   ie:  jQuery.browser.msie,
+//   ie6: jQuery.browser.msie    && parseInt(jQuery.browser.version, 10) == 6,
+//   ie7: jQuery.browser.msie    && parseInt(jQuery.browser.version, 10) == 7,
+//   ie8: jQuery.browser.msie    && parseInt(jQuery.browser.version, 10) == 8,
+//   ff2: jQuery.browser.mozilla && parseFloat(jQuery.browser.version) < 1.9
+// });
 
-/*
-@preserve CLEditor WYSIWYG HTML Editor v1.3.0
-http://premiumsoftware.net/cleditor
-requires jQuery v1.4.2 or later
+/*!
+ CLEditor WYSIWYG HTML Editor v1.4.0
+ http://premiumsoftware.net/cleditor
+ requires jQuery v1.4.2 or later
 
-Copyright 2010, Chris Landowski, Premium Software, LLC
-Dual licensed under the MIT or GPL Version 2 licenses.
+ Copyright 2010, Chris Landowski, Premium Software, LLC
+ Dual licensed under the MIT or GPL Version 2 licenses.
 */
-
-// ==ClosureCompiler==
-// @compilation_level SIMPLE_OPTIMIZATIONS
-// @output_file_name jquery.cleditor.min.js
-// ==/ClosureCompiler==
 
 (function($) {
 
@@ -166,7 +159,7 @@ Dual licensed under the MIT or GPL Version 2 licenses.
 
     // Define the defaults used for all new cleditor instances
     defaultOptions: {
-      width:        500, // width not including margins, borders or padding
+      width:        'auto', // width not including margins, borders or padding
       height:       250, // height not including margins, borders or padding
       controls:     // controls to add to the toolbar
                     "bold italic underline strikethrough subscript superscript | font size " +
@@ -190,7 +183,7 @@ Dual licensed under the MIT or GPL Version 2 licenses.
                     [["Paragraph", "<p>"], ["Header 1", "<h1>"], ["Header 2", "<h2>"],
                     ["Header 3", "<h3>"],  ["Header 4","<h4>"],  ["Header 5","<h5>"],
                     ["Header 6","<h6>"]],
-      useCSS:       false, // use CSS to style HTML when possible (not supported in ie)
+      useCSS:       true, // use CSS to style HTML when possible (not supported in ie)
       docType:      // Document type contained within the editor
                     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
       docCSSFile:   // CSS file used to style the document contained within the editor
@@ -296,12 +289,15 @@ Dual licensed under the MIT or GPL Version 2 licenses.
   PROMPT_CLASS     = "cleditorPrompt",  // prompt popup divs inside body
   MSG_CLASS        = "cleditorMsg",     // message popup div inside body
 
-  // Test for ie
-  ie = $.browser.msie,
-  ie6 = /msie\s6/i.test(navigator.userAgent),
+  // Browser detection
+  ua = navigator.userAgent.toLowerCase(),
+  ie = /msie/.test(ua),
+  ie6 = /msie\s6/.test(ua),
+  webkit = /webkit/.test(ua),
+  mozilla = ua.indexOf("compatible") < 0 && /mozilla/.test(ua),
 
   // Test for iPhone/iTouch/iPad
-  iOS = /iphone|ipad|ipod/i.test(navigator.userAgent),
+  iOS = /iphone|ipad|ipod/i.test(ua),
 
   // Popups are created once as needed and shared by all editor instances
   popups = {},
@@ -368,6 +364,9 @@ Dual licensed under the MIT or GPL Version 2 licenses.
       .addClass(GROUP_CLASS)
       .appendTo($toolbar);
 
+    // Initialize the group width
+    var groupWidth = 0;
+
     // Add the buttons to the toolbar
     $.each(options.controls.split(" "), function(idx, buttonName) {
       if (buttonName === "") return true;
@@ -379,6 +378,10 @@ Dual licensed under the MIT or GPL Version 2 licenses.
         var $div = $(DIV_TAG)
           .addClass(DIVIDER_CLASS)
           .appendTo($group);
+
+        // Update the group width
+        $group.width(groupWidth + 1);
+        groupWidth = 0;
 
         // Create a new group
         $group = $(DIV_TAG)
@@ -401,6 +404,10 @@ Dual licensed under the MIT or GPL Version 2 licenses.
           .bind(CLICK, $.proxy(buttonClick, editor))
           .appendTo($group)
           .hover(hoverEnter, hoverLeave);
+
+        // Update the group width
+        groupWidth += 24;
+        $group.width(groupWidth + 1);
 
         // Prepare the button image
         var map = {};
@@ -899,19 +906,26 @@ Dual licensed under the MIT or GPL Version 2 licenses.
     return editor.$frame[0].contentWindow.getSelection();
   }
 
-  // Returns the hex value for the passed in string.
-  //   hex("rgb(255, 0, 0)"); // #FF0000
-  //   hex("#FF0000"); // #FF0000
-  //   hex("#F00"); // #FF0000
+  // hex - returns the hex value for the passed in color string
   function hex(s) {
-    var m = /rgba?\((\d+), (\d+), (\d+)/.exec(s),
-      c = s.split("");
+
+    // hex("rgb(255, 0, 0)") returns #FF0000
+    var m = /rgba?\((\d+), (\d+), (\d+)/.exec(s);
     if (m) {
-      s = ( m[1] << 16 | m[2] << 8 | m[3] ).toString(16);
+      s = (m[1] << 16 | m[2] << 8 | m[3]).toString(16);
       while (s.length < 6)
         s = "0" + s;
+      return "#" + s;
     }
-    return "#" + (s.length == 6 ? s : c[1] + c[1] + c[2] + c[2] + c[3] + c[3]);
+
+    // hex("#F00") returns #FF0000
+    var c = s.split("");
+    if (s.length == 4)
+      return "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+
+    // hex("#FF0000") returns #FF0000
+    return s;
+
   }
 
   // hidePopups - hides all popups
@@ -1013,7 +1027,7 @@ Dual licensed under the MIT or GPL Version 2 licenses.
     }
 
     // Update the textarea when the iframe loses focus
-    ($.browser.mozilla ? $doc : $(contentWindow)).blur(function() {
+    (mozilla ? $doc : $(contentWindow)).blur(function() {
       updateTextArea(editor, true);
     });
 
@@ -1061,7 +1075,7 @@ Dual licensed under the MIT or GPL Version 2 licenses.
   function refreshButtons(editor) {
 
     // Webkit requires focus before queryCommandEnabled will return anything but false
-    if (!iOS && $.browser.webkit && !editor.focused) {
+    if (!iOS && webkit && !editor.focused) {
       editor.$frame[0].contentWindow.focus();
       window.focus();
       editor.focused = true;
@@ -1277,7 +1291,9 @@ Dual licensed under the MIT or GPL Version 2 licenses.
 
 if (typeof(Rich) == "undefined") {
   Rich = {};
-  $.initModules(Rich);
+  $(function() {
+    $.initModules(Rich);
+  });
 }
 
 Rich.Cms = (function() {
@@ -1308,7 +1324,7 @@ Rich.Cms = (function() {
 Rich.Cms.Editor = (function() {
   var content_class        = "rich_cms_content", mark_class = "marked", edit_panel = "#rich_cms_panel",
       editable_content     = {}, content_items = "",
-      cleditor_images_path = "/images/rich/cms/cleditor",
+      cleditor_images_path = "/assets/rich/cms/cleditor",
       cleditor_css         = '<style>.cleditorMain {border:1px solid #999; padding:0 1px 1px; background-color:white} .cleditorMain iframe {border:none; margin:0; padding:0} .cleditorMain textarea {border:none; margin:0; padding:0; overflow-y:scroll; font:10pt Arial,Verdana; resize:none; outline:none /* webkit grip focus */} .cleditorToolbar {background: url("' + cleditor_images_path + '/toolbar.gif") repeat} .cleditorGroup {float:left; height:26px} .cleditorButton {float:left; width:24px; height:24px; margin:1px 0 1px 0; background: url("' + cleditor_images_path + '/buttons.gif")} .cleditorDisabled {opacity:0.3; filter:alpha(opacity=30)} .cleditorDivider {float:left; width:1px; height:23px; margin:1px 0 1px 0; background:#CCC} .cleditorPopup {border:solid 1px #999; background-color:white; position:absolute; font:10pt Arial,Verdana; cursor:default; z-index:10000} .cleditorList div {padding:2px 4px 2px 4px} .cleditorList p, .cleditorList h1, .cleditorList h2, .cleditorList h3, .cleditorList h4, .cleditorList h5, .cleditorList h6, .cleditorList font {padding:0; margin:0; background-color:Transparent} .cleditorColor {width:150px; padding:1px 0 0 1px} .cleditorColor div {float:left; width:14px; height:14px; margin:0 1px 1px 0} .cleditorPrompt {background-color:#F6F7F9; padding:4px; font-size:8.5pt} .cleditorPrompt input, .cleditorPrompt textarea {font:8.5pt Arial,Verdana;} .cleditorMsg {background-color:#FDFCEE; width:150px; padding:4px; font-size:8.5pt}</style>';
 
   var register = function(hash) {
@@ -1317,7 +1333,7 @@ Rich.Cms.Editor = (function() {
   };
 
   var bind = function() {
-    $("#rich_cms_panel .edit form fieldset.inputs div.keys a.toggler").live("click", function(event) {
+    $(document).on("click", "#rich_cms_panel .edit form fieldset.inputs div.keys a.toggler", function(event) {
       event.preventDefault();
       var toggler = $(event.target);
       toggler.hide().closest(".keys").find("select[name=" + toggler.attr("data-name") + "]").show();
@@ -1378,6 +1394,10 @@ Rich.Cms.Editor = (function() {
   };
 
   var edit = function() {
+    if ($(this)[0] == document) {
+      return;
+    }
+
     var content_item = $(this).closest(".rich_cms_content");
     var keys         = $("#rich_cms_panel .edit form fieldset.inputs div.keys");
     var inputs       = $("#rich_cms_panel .edit form fieldset.inputs");
@@ -1605,11 +1625,18 @@ RaccoonTip = (function() {
   }, opts = null;
 
   var register = function(target, content, options) {
-    var attachFunction = $.inArray(options.event || default_options.event, ["focus"]) == -1 ? "live" : "bind";
-    $(target)[attachFunction]((options || {}).event || "click", function(event) {
+    options.event || (options.event = default_options.event);
+
+    var callback = function(event) {
       event.preventDefault();
       display(event.target, content, options);
-    });
+    };
+
+    if (options.event == "focus") {
+      $(target).bind(options.event, callback);
+    } else {
+      $(document).on(options.event, target, callback);
+    }
   };
 
   var display = function(target, content, options) {

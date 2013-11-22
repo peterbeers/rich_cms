@@ -12,17 +12,6 @@ task :test do
   system "suit test unit -v"
 end
 
-desc "Compile Rich-CMS javascripts and stylesheets"
-namespace :assets do
-  task :compile do
-    require "jzip"
-    Jzip::Engine.root_dir = File.expand_path "../assets", __FILE__
-    Jzip::Engine.add_template_location "#{Jzip::Engine.root_dir}/jzip"
-    Jzip::Engine.compile_javascript_files
-    system "sass --update assets/sass:assets/public/stylesheets"
-  end
-end
-
 desc "Generate documentation for Rich-CMS"
 Rake::RDocTask.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = "rdoc"

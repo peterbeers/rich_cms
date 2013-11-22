@@ -2,13 +2,13 @@ if Rails::VERSION::MAJOR >= 3
 
   Rails.application.routes.draw do
     scope :module => "rich" do
-      match "/cms/"     => "cms#display" , :as => "rich_cms"     , :display => true
-      match "/cms/hide" => "cms#display" , :as => "rich_cms_hide", :display => false
+      match "/cms/"     => "cms#display" , :as => "rich_cms"     , :display => true, :via => [:get, :post]
+      match "/cms/hide" => "cms#display" , :as => "rich_cms_hide", :display => false, :via => [:get, :post]
       %w(login logout).each do |action|
-        match "/cms/#{action}" => "cms_sessions##{action}", :as => "rich_cms_#{action}"
+        match "/cms/#{action}" => "cms_sessions##{action}", :as => "rich_cms_#{action}", :via => [:get, :post]
       end
       %w(position update).each do |action|
-        match "/cms/#{action}" => "cms##{action}", :as => "rich_cms_#{action}"
+        match "/cms/#{action}" => "cms##{action}", :as => "rich_cms_#{action}", :via => [:get, :post]
       end
     end
   end
@@ -23,13 +23,13 @@ else
 
   ActionController::Routing::Routes.draw do |map|
     map.namespace :rich, :path_prefix => "" do |rich|
-      rich.cms      "cms"     , :controller => "cms", :action => "display", :display => true
-      rich.cms_hide "cms/hide", :controller => "cms", :action => "display", :display => false
+      rich.cms      "cms"     , :controller => "cms", :action => "display", :display => true, :via => [:get, :post]
+      rich.cms_hide "cms/hide", :controller => "cms", :action => "display", :display => false, :via => [:get, :post]
       %w(login logout).each do |action|
-        rich.send "cms_#{action}", "cms/#{action}", :controller => "cms_sessions", :action => action
+        rich.send "cms_#{action}", "cms/#{action}", :controller => "cms_sessions", :action => action, :via => [:get, :post]
       end
       %w(position update).each do |action|
-        rich.send "cms_#{action}", "cms/#{action}", :controller => "cms", :action => action
+        rich.send "cms_#{action}", "cms/#{action}", :controller => "cms", :action => action, :via => [:get, :post]
       end
     end
   end

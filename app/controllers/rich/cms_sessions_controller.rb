@@ -1,30 +1,35 @@
 module Rich
   class CmsSessionsController < ::ApplicationController
+    before_filter :allow_params_authentication!, :only => :login
 
     def login
-      success = Rich::Cms::Auth.login
+      @success = Rich::Cms::Auth.login
+
       if request.xhr?
-        render :update do |page|
-          if success
-            page.reload
-          else
-            page["##{Rich::Cms::Auth.klass_symbol}_#{Rich::Cms::Auth.inputs.first}"].focus
-          end
+        respond_to do |format|
+          format.js
         end
       else
-        redirect_to request.referrer
+        redirect_to "/"
       end
     end
 
     def logout
       Rich::Cms::Auth.logout
       if request.xhr?
-        render :update do |page|
-          page.reload
+        respond_to do |format|
+          format.js
         end
       else
-        redirect_to request.referrer
+        redirect_to "/"
       end
+    end
+
+  private
+
+    # Tell warden that params authentication is allowed for that specific page.
+    def allow_params_authentication!
+      request.env["devise.allow_params_authentication"] = true
     end
 
   end
